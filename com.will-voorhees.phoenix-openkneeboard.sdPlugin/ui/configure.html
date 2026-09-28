@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpenKneeboard Configurator</title>
+  <style>
+    :root { color-scheme: dark; font: 13px system-ui, sans-serif; }
+    body { margin: 0; padding: 16px; color: #f0f0f0; background: #252525; }
+    h1 { margin: 0 0 14px; font-size: 15px; font-weight: 600; }
+    label { display: block; margin: 12px 0; color: #d3d3d3; }
+    input, textarea { display: block; box-sizing: border-box; width: 100%; margin-top: 5px; padding: 7px 8px; color: white; background: #363636; border: 1px solid #555; border-radius: 4px; font: inherit; }
+    input[type=checkbox] { display: inline; width: auto; margin: 0 7px 0 0; }
+    textarea { min-height: 70px; resize: vertical; font-family: ui-monospace, monospace; }
+    button { padding: 7px 16px; color: white; background: #266773; border: 0; border-radius: 4px; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: default; }
+    small { display: block; margin-top: 3px; color: #a9a9a9; line-height: 1.35; }
+    #status { min-height: 18px; margin-top: 10px; color: #c7dfdf; }
+  </style>
+</head>
+<body>
+  <h1 id="heading">OpenKneeboard Configurator</h1>
+  <form id="form" hidden>
+    <div id="fields"></div>
+    <button id="save" type="submit">Save</button>
+    <div id="status" role="status" aria-live="polite"></div>
+  </form>
+  <script>
+    const specs = {
+      'overlay-control': [
+        ['deckTab', 'Deck tab', 'text', 'Tab shown on the main deck page.'],
+        ['wheelTab', 'Reference tab', 'text', 'Tab shown when the reference key is pressed.'],
+        ['wheelView', 'Reference view', 'number', '1-based OpenKneeboard view number.'],
+        ['kneeboardProfile', 'OpenKneeboard profile', 'text', 'Exact profile name; leave blank to keep the current profile.'],
+      ],
+      'placement-dial': [
+        ['dialIndex', 'Axis index', 'number', '0–5: X, EyeY, Z, RX, RY, RZ. Defaults to dial column.'],
+        ['direction', 'Key press step', 'number', 'Signed tick count; 0 disables key nudging.'],
+        ['coarseTab', 'Coarse reference tab', 'text', 'Default: Placement.'],
+        ['fineTab', 'Fine reference tab', 'text', 'Default: Placement Fine.'],
+        ['size', 'Use size instead of axis', 'checkbox', 'Scale both physical dimensions proportionally.'],
+        ['sizes', 'View sizes (JSON)', 'json', 'Optional mapping of view numbers to {"Width":0.15,"Height":0.25}.'],
+      ],
+      'view-select': [['view', 'View', 'number', '1-based OpenKneeboard view number.']],
+      'view-visibility': [['view', 'View', 'number', '1-based OpenKneeboard view number.']],
+      'view-opacity': [
+        ['view', 'View', 'number', 'Leave blank to follow the selected placement view.'],
+        ['step', 'Key press step', 'number', 'Signed opacity change; negative fades out. Default: -0.1.'],
+      ],
+      'placement-reset': [],
+      'recentre': [],
+    };
+    const form = document.getElementById('form');
+    const fields = document.getElementById('fields');
+    const status = document.getElementById('status');
+    let socket;
+    let context;
+    let action;
+    let settings = {};
+    let activeSpecs = [];
+    function render() {
+      fields.replaceChildren();
+      for (const [key, labelText, kind, hint] of activeSpecs) {
+        const label = document.createElement('label');
+        label.textContent = labelText;
+        const input = kind === 'json' ? document.createElement('textarea') : document.createElement('input');
+        input.id = key;
+        if (kind !== 'json') input.type = kind;
+        if (kind === 'number') input.step = 'any';
+        if (kind === 'checkbox') input.checked = settings[key] === true;
+        else if (kind === 'json') input.value = settings[key] ? JSON.stringify(settings[key], null, 2) : '';
+        else input.value = settings[key] ?? '';
+        label.append(input);
+        const help = document.createElement('small');
+        help.textContent = hint;
+        label.append(help);
+        fields.append(label);
+      }
+      if (activeSpecs.length === 0) {
+        const note = document.createElement('p');
+        note.textContent = 'This action has no settings.';
+        fields.append(note);
+        document.getElementById('save').hidden = true;
+      }
+      form.hidden = false;
+    }
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const next = { ...settings };
+      try {
+        for (const [key, , kind] of activeSpecs) {
+          const input = document.getElementById(key);
+          if (kind === 'checkbox') { next[key] = input.checked; continue; }
+          if (input.value.trim() === '') { delete next[key]; continue; }
+          if (kind === 'number') {
+            const value = Number(input.value);
+            if (!Number.isFinite(value)) throw new Error(`${key} must be a finite number`);
+            if (['view', 'wheelView'].includes(key) && (!Number.isInteger(value) || value < 1 || value > 255)) {
+              throw new Error(`${key} must be a view number from 1 to 255`);
+            }
+            if (key === 'dialIndex' && (!Number.isInteger(value) || value < 0 || value > 5)) {
+              throw new Error('Axis index must be an integer from 0 to 5');
+            }
+            next[key] = value;
+          } else if (kind === 'json') {
+            const value = JSON.parse(input.value);
+            if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error(`${key} must be an object`);
+            next[key] = value;
+          } else next[key] = input.value.trim();
+        }
+        socket.send(JSON.stringify({ event: 'setSettings', action, context, payload: next }));
+        settings = next;
+        status.textContent = 'Saved';
+      } catch (error) { status.textContent = error.message; }
+    });
+    window.connectElgatoStreamDeckSocket = (port, uuid, event, info, actionInfo) => {
+      context = uuid;
+      const details = JSON.parse(actionInfo);
+      action = details.action;
+      settings = details.payload?.settings ?? {};
+      const suffix = action.split('.').at(-1);
+      activeSpecs = specs[suffix] ?? [];
+      document.getElementById('heading').textContent = `OpenKneeboard · ${suffix.replaceAll('-', ' ')}`;
+      render();
+      socket = new WebSocket(`ws://127.0.0.1:${port}`);
+      socket.addEventListener('open', () => socket.send(JSON.stringify({ event, uuid })));
+      socket.addEventListener('message', ({ data }) => {
+        const message = JSON.parse(data);
+        if (message.event === 'didReceiveSettings' && message.payload?.settings) {
+          settings = message.payload.settings;
+          render();
+        }
+      });
+    };
+  </script>
+</body>
+</html>

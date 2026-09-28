@@ -1,0 +1,149 @@
+{
+  "Name": "OpenKneeboard Configurator",
+  "Version": "0.1.0.0",
+  "Author": "Will Voorhees",
+  "Description": "Control OpenKneeboard tabs, profiles, VR placement, visibility, and opacity from Stream Deck.",
+  "Category": "OpenKneeboard Configurator",
+  "CategoryIcon": "imgs/category",
+  "Icon": "imgs/plugin",
+  "URL": "https://github.com/wsvoorhees/openkneeboard-configurator",
+  "UUID": "com.will-voorhees.phoenix-openkneeboard",
+  "CodePath": "bin/plugin.js",
+  "SDKVersion": 3,
+  "Nodejs": {
+    "Version": "20",
+    "Debug": "enabled"
+  },
+  "Software": {
+    "MinimumVersion": "6.9"
+  },
+  "OS": [
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    }
+  ],
+  "Actions": [
+    {
+      "Name": "Overlay Control",
+      "UUID": "com.will-voorhees.phoenix-openkneeboard.overlay-control",
+      "Icon": "imgs/actions/overlay-control/icon",
+      "Tooltip": "Toggle the wheel reference.",
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "imgs/actions/overlay-control/key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
+      "Name": "Placement Dial",
+      "UUID": "com.will-voorhees.phoenix-openkneeboard.placement-dial",
+      "Icon": "imgs/actions/placement-dial/icon",
+      "Tooltip": "Turn to nudge one axis; press to toggle coarse/fine.",
+      "Controllers": [
+        "Encoder",
+        "Keypad"
+      ],
+      "Encoder": {
+        "layout": "$X1",
+        "TriggerDescription": {
+          "Rotate": "Nudge axis",
+          "Push": "Coarse / fine"
+        }
+      },
+      "States": [
+        {
+          "Image": "imgs/actions/placement-dial/key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
+      "Name": "Reset Position",
+      "UUID": "com.will-voorhees.phoenix-openkneeboard.placement-reset",
+      "Icon": "imgs/actions/placement-reset/icon",
+      "Tooltip": "Undo every nudge sent since placement was entered.",
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "imgs/actions/placement-reset/key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
+      "Name": "Recentre VR",
+      "UUID": "com.will-voorhees.phoenix-openkneeboard.recentre",
+      "Icon": "imgs/actions/recentre/icon",
+      "Tooltip": "Recentre the kneeboard on your current view.",
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "imgs/actions/recentre/key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
+      "Name": "Select View",
+      "UUID": "com.will-voorhees.phoenix-openkneeboard.view-select",
+      "Icon": "imgs/actions/view-select/icon",
+      "Tooltip": "Point the placement dials at this view.",
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "imgs/actions/view-select/key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
+      "Name": "Toggle View",
+      "UUID": "com.will-voorhees.phoenix-openkneeboard.view-visibility",
+      "Icon": "imgs/actions/view-visibility/icon",
+      "Tooltip": "Show or hide this view.",
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "imgs/actions/view-visibility/key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
+      "Name": "Fade View",
+      "UUID": "com.will-voorhees.phoenix-openkneeboard.view-opacity",
+      "Icon": "imgs/actions/view-opacity/icon",
+      "Tooltip": "Fade the selected view up or down.",
+      "Controllers": [
+        "Keypad",
+        "Encoder"
+      ],
+      "Encoder": {
+        "layout": "$X1",
+        "TriggerDescription": {
+          "Rotate": "Adjust opacity"
+        }
+      },
+      "States": [
+        {
+          "Image": "imgs/actions/view-opacity/key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    }
+  ],
+  "PropertyInspectorPath": "ui/configure.html"
+}

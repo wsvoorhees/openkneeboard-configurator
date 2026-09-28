@@ -1,0 +1,33 @@
+{
+  "name": "openkneeboard-configurator",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Self-contained Stream Deck plugin for controlling OpenKneeboard views, tabs, placement, and opacity.",
+  "scripts": {
+    "build": "rollup -c --configPlugin typescript",
+    "test": "node --experimental-strip-types --test test/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "generate:icons": "node scripts/generate-icons.mjs",
+    "validate": "streamdeck validate com.will-voorhees.phoenix-openkneeboard.sdPlugin --no-update-check",
+    "pack": "npm run build && npm run bundle:runtime && streamdeck pack com.will-voorhees.phoenix-openkneeboard.sdPlugin --output dist --force --no-update-check",
+    "bundle:runtime": "node scripts/bundle-runtime.mjs"
+  },
+  "dependencies": {
+    "@elgato/streamdeck": "^2.0.0",
+    "koffi": "^3.3.1"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.0",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^15.2.2",
+    "@rollup/plugin-typescript": "^12.1.0",
+    "@tsconfig/node20": "^20.1.2",
+    "@types/node": "~20.15.0",
+    "rollup": "^4.0.2",
+    "tslib": "^2.6.2",
+    "typescript": "^5.2.2",
+    "@elgato/cli": "^1.10.1",
+    "@resvg/resvg-js": "^2.6.2"
+  }
+}
