@@ -1,8 +1,8 @@
 # OpenKneeboard Configurator
 
-A Windows Stream Deck plugin for controlling OpenKneeboard from keys and dials. It can switch tabs and profiles, recenter VR, nudge a view's placement and size, toggle one view, and fade one view. Each action has an offline property inspector for its settings. No Phoenix checkout or external icon pack is needed.
+A Windows Stream Deck plugin for controlling OpenKneeboard from keys and dials. It can switch tabs and profiles, recenter VR, nudge a view's placement and size, toggle one view, and fade one view. Each action has an offline property inspector for its settings. The plugin includes its own icons and build files.
 
-The plugin retains its original internal UUID, `com.will-voorhees.phoenix-openkneeboard`, so Stream Deck profiles already using its actions continue to resolve them. Its visible name and category are **OpenKneeboard Configurator**.
+Existing Stream Deck profiles continue to work because the plugin keeps its original internal action identifiers. Its visible name and category are **OpenKneeboard Configurator**.
 
 ## OpenKneeboard compatibility
 
@@ -58,10 +58,11 @@ npm run pack
 With OpenKneeboard running, the built `bin/smoke.js` sends a tab-switch packet:
 
 ```powershell
-node .\com.will-voorhees.phoenix-openkneeboard.sdPlugin\bin\smoke.js AMS2
+$plugin = Get-ChildItem -Directory -Filter '*.sdPlugin' | Select-Object -First 1
+node (Join-Path $plugin.FullName 'bin/smoke.js') AMS2
 ```
 
-Replace `AMS2` with an existing tab title. If OpenKneeboard is closed, the smoke test should fail. Logs from the installed plugin live in its `logs/` folder under `%APPDATA%\Elgato\StreamDeck\Plugins\com.will-voorhees.phoenix-openkneeboard.sdPlugin`.
+Replace `AMS2` with an existing tab title. If OpenKneeboard is closed, the smoke test should fail. Logs from the installed plugin live in its `logs/` folder under `%APPDATA%\Elgato\StreamDeck\Plugins\`.
 
 ## Source layout
 
