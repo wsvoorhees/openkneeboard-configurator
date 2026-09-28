@@ -44,7 +44,7 @@ Placement controls work best on a dedicated Stream Deck page. Create `Placement`
 
 ## Build and install
 
-Use Node.js 20 or newer. Build and install on **Windows**, because `koffi` selects a native Windows binary when `npm ci` runs there. Quit Stream Deck from its tray icon before installing.
+Use Node.js 20 or newer. Build and install on **Windows**, because `koffi` selects a native Windows binary when `npm ci` runs there. Quit Stream Deck from its tray icon before the install step.
 
 ```powershell
 npm ci
@@ -55,7 +55,7 @@ npm run validate
 powershell -ExecutionPolicy Bypass -File .\install.ps1 -Copy
 ```
 
-`install.ps1` stages the source in a native Windows build directory, so it also works when the checkout is in WSL and PowerShell sees it through a UNC path. Omit `-Copy` to link the build directory into Stream Deck's Plugins folder; that requires Windows Developer Mode or elevation. The script refuses to install while Stream Deck is running to avoid partially replacing its locked native binary.
+`install.ps1` stages the source in a native Windows build directory, so it also works when the checkout is in WSL and PowerShell sees it through a UNC path. To keep Stream Deck available during the build, run `install.ps1 -StageOnly`, quit Stream Deck, then run `install.ps1 -UseStagedBuild -Copy`. Omit `-Copy` to link the build directory into Stream Deck's Plugins folder; that requires Windows Developer Mode or elevation. The script refuses to install while Stream Deck is running to avoid partially replacing its locked native binary.
 
 To make a distributable `.streamDeckPlugin` file on Windows:
 
