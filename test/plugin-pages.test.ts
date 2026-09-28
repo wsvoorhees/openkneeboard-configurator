@@ -100,3 +100,27 @@ test("two devices settle independently", () => {
   timer.fireAll();
   assert.deepEqual(applied.map((a) => [a.device, a.effects.enteredPlacement]).sort(), [["deck-A", false], ["deck-B", true]]);
 });
+
+test("switching Coarse to Fine keeps the placement accumulator", () => {
+  const { pages, applied, timer } = harness();
+  pages.appeared("deck-A", placementDial);
+  timer.fireAll();
+  pages.appeared("deck-A", { page: "placement", tab: "Placement Fine" });
+  timer.fireAll();
+  assert.equal(applied[0]!.effects.enteredPlacement, true);
+  assert.deepEqual(applied[1]!.effects, {
+    tab: "Placement Fine", profile: undefined, enteredPlacement: false,
+  });
+});
+
+test("a different game profile starts a fresh placement session", () => {
+  const { pages, applied, timer } = harness();
+  pages.appeared("deck-A", { page: "deck", deckTab: "AMS2", profile: "AMS2" });
+  pages.appeared("deck-A", { page: "placement", tab: "Placement" });
+  timer.fireAll();
+  pages.appeared("deck-A", { page: "deck", deckTab: "LMU", profile: "LMU" });
+  pages.appeared("deck-A", { page: "placement", tab: "Placement Fine" });
+  timer.fireAll();
+  assert.equal(applied[1]!.effects.enteredPlacement, true);
+  assert.equal(applied[1]!.effects.profile, "LMU");
+});

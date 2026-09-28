@@ -49,7 +49,7 @@ test('every action has the bundled offline settings UI', () => {
 
 test('every control is available on keys and dials', () => {
   const expected = [
-    'overlay-control', 'profile-select', 'tab-select', 'placement-dial', 'step-mode',
+    'overlay-control', 'profile-select', 'tab-select', 'placement-dial',
     'placement-reset', 'recentre', 'view-select', 'view-visibility', 'view-opacity',
   ];
   const ids = manifest.Actions.map((action: { UUID: string }) => action.UUID.slice(manifest.UUID.length + 1));
@@ -57,7 +57,8 @@ test('every control is available on keys and dials', () => {
   const ui = fs.readFileSync(path.join(bundle, manifest.PropertyInspectorPath), 'utf8');
   for (const action of manifest.Actions) {
     assert.deepEqual([...action.Controllers].sort(), ['Encoder', 'Keypad']);
-    assert.ok(action.Encoder?.TriggerDescription?.Push, `${action.Name} dial press`);
+    if (!action.UUID.endsWith(".placement-dial"))
+      assert.ok(action.Encoder?.TriggerDescription?.Push, `${action.Name} dial press`);
     const suffix = action.UUID.slice(manifest.UUID.length + 1);
     assert.ok(ui.includes(`'${suffix}':`), `${action.Name} settings`);
   }

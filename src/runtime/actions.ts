@@ -9,7 +9,7 @@ import {
 } from "@elgato/streamdeck";
 
 import { placementFeedback, placementFeedbackForAxis } from "../feedback.ts";
-import { DEFAULT_VIEW_SIZE, OPACITY_STEP, resetDelta, resize, rotate, setTarget, toggleMode,
+import { DEFAULT_VIEW_SIZE, OPACITY_STEP, resetDelta, resize, rotate, setTarget,
   validSize } from "../placement.ts";
 import { recenterVr } from "../protocol.ts";
 import {
@@ -139,25 +139,16 @@ export type PlacementDialSettings = {
   /** 0-5 → X / EyeY / Z / RX / RY / RZ. Defaults to dial column or X on a key. */
   dialIndex?: number;
   direction?: number;
-  /** The two generated placement references. Pressing a dial switches between them, which is how
-   * the live step size becomes visible in a headset — a static page cannot show a changing state,
-   * and the deck's own labels are on a device you cannot look at. */
-  coarseTab?: string;
-  fineTab?: string;
+  /** Placement tab belonging to this physical Stream Deck page. */
+  placementTab?: string;
+  /** Multiples of the fine step per dial detent; defaults to one. */
+  tickMultiplier?: number;
   /** Dial 1 scales the selected view's physical size instead of moving EyeY. */
   size?: boolean;
   sizes?: Record<string, Record<string, number>>;
 };
 
-type ModeTabs = Pick<PlacementDialSettings, "coarseTab" | "fineTab">;
-
-function switchStepMode(settings: ModeTabs): void {
-  const next = toggleMode(getPlacement());
-  setPlacement(next);
-  showTabOnView(next.mode === "fine" ? (settings.fineTab ?? "Placement Fine") : (settings.coarseTab ?? "Placement"), 1);
-}
-
-/** A placement-page dial. Turn nudges its axis; press toggles coarse/fine for ALL of them. */
+/** A placement-page dial. Turn nudges its axis using this page's configured ticks. */
 @action({ UUID: `${UUID}.placement-dial` })
 export class PlacementDial extends SingletonAction<PlacementDialSettings> {
   #index(ev: { action: { coordinates?: { column: number } }; payload: { settings?: PlacementDialSettings } }): number {
@@ -165,7 +156,7 @@ export class PlacementDial extends SingletonAction<PlacementDialSettings> {
   }
 
   override async onWillAppear(ev: WillAppearEvent<PlacementDialSettings>): Promise<void> {
-    pageAppeared(ev.action.device.id, { page: "placement", tab: ev.payload.settings?.coarseTab });
+    pageAppeared(ev.action.device.id, { page: "placement", tab: ev.payload.settings?.placementTab });
     if (!ev.action.isDial()) return;
     const feedback = placementFeedbackForAxis(this.#index(ev), ev.payload.settings?.size === true);
     if (!feedback) return;
@@ -176,7 +167,7 @@ export class PlacementDial extends SingletonAction<PlacementDialSettings> {
   }
 
   override onDialRotate(ev: DialRotateEvent<PlacementDialSettings>): void {
-    this.#move(ev.payload.settings ?? {}, this.#index(ev), ev.payload.ticks);
+    this.#move(ev.payload.settings ?? {}, this.#index(ev), ev.payload.ticks * (ev.payload.settings?.tickMultiplier ?? 1));
   }
 
   #move(settings: PlacementDialSettings, index: number, ticks: number): void {
@@ -195,24 +186,6 @@ export class PlacementDial extends SingletonAction<PlacementDialSettings> {
     this.#move(ev.payload.settings ?? {}, ev.payload.settings?.dialIndex ?? 0, ev.payload.settings?.direction ?? 1);
   }
 
-  override onDialDown(ev: DialDownEvent<PlacementDialSettings>): void {
-    switchStepMode(ev.payload.settings ?? {});
-  }
-}
-
-/** A key or dial press for the coarse/fine mode switch used by placement nudges. */
-@action({ UUID: `${UUID}.step-mode` })
-export class StepModeControl extends SingletonAction<ModeTabs> {
-  override async onWillAppear(ev: WillAppearEvent<ModeTabs>): Promise<void> {
-    pageAppeared(ev.action.device.id, { page: "placement" });
-    if (ev.action.isDial()) await ev.action.setTitle("Coarse / Fine");
-  }
-  override onKeyDown(ev: KeyDownEvent<ModeTabs>): void {
-    switchStepMode(ev.payload.settings ?? {});
-  }
-  override onDialDown(ev: DialDownEvent<ModeTabs>): void {
-    switchStepMode(ev.payload.settings ?? {});
-  }
 }
 
 export type ViewKeySettings = {

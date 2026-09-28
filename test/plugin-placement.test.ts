@@ -13,7 +13,6 @@ import {
   rotate,
   stepFor,
   setTarget,
-  toggleMode,
 } from "../src/placement.ts";
 
 test("positional nudge indices map to distinct degrees of freedom", () => {
@@ -32,12 +31,12 @@ test("dial feedback names the configured movement, including size", () => {
     "Size overrides the physical dial column in the feedback");
 });
 
-test("size nudges preserve captured proportions, use the live mode, and reset exactly", () => {
+test("size nudges preserve captured proportions and reset across page step sizes", () => {
   const base = { Width: 0.32, Height: 0.54 };
-  const coarse = resize(createPlacement(), 2, base);
+  const coarse = resize(createPlacement(), 10, base);
   assert.deepEqual(coarse.nudge, { MaxWidth: base.Width * 2 * 0.05, MaxHeight: base.Height * 2 * 0.05 });
   assert.equal(coarse.nudge.MaxWidth! / base.Width, coarse.nudge.MaxHeight! / base.Height);
-  const fine = resize(toggleMode(coarse.state), -1, base);
+  const fine = resize(coarse.state, -1, base);
   assert.ok(Math.abs(fine.nudge.MaxWidth! / base.Width + 0.01) < 1e-12);
   const packet = JSON.parse(nudgeVrView(fine.nudge, fine.state.target).split("!")[3]!);
   assert.deepEqual(packet, { Kneeboard: fine.state.target, ...fine.nudge });
@@ -74,15 +73,8 @@ test("step sizes are 1mm/0.5° fine and 1cm/5° coarse, translations and rotatio
   assert.notEqual(stepFor("RY", "fine"), stepFor("X", "fine"));
 });
 
-test("pressing a dial toggles coarse and fine, and starts coarse", () => {
-  const start = createPlacement();
-  assert.equal(start.mode, "coarse");
-  assert.equal(toggleMode(start).mode, "fine");
-  assert.equal(toggleMode(toggleMode(start)).mode, "coarse");
-});
-
 test("a turn emits one axis scaled by the live step, and several ticks scale with it", () => {
-  const fine = toggleMode(createPlacement());
+  const fine = createPlacement();
   const one = rotate(fine, 1, 1);
   assert.deepEqual(one.nudge, { EyeY: 0.001 });
 
@@ -92,8 +84,7 @@ test("a turn emits one axis scaled by the live step, and several ticks scale wit
 
 test("reset sends the exact inverse of everything this session moved, then forgets it", () => {
   let state = createPlacement();
-  state = rotate(state, 0, 4).state;   // X coarse  +0.04
-  state = toggleMode(state);
+  state = rotate(state, 0, 40).state;  // X coarse: 4 detents × 10 ticks
   state = rotate(state, 4, -2).state;  // RY fine   -2 * 0.5deg
   state = rotate(state, 0, 1).state;   // X fine    +0.001
 
@@ -123,9 +114,9 @@ test("each view keeps its own accumulator, so reset undoes only the panel you ar
   // With a deck map and a wheel reference in their own places, one shared accumulator would make
   // Reset push whichever panel you are looking at by the OTHER one's offset.
   let state = createPlacement();
-  state = rotate(state, 0, 4).state;            // view 1, X +0.04
+  state = rotate(state, 0, 40).state;           // view 1, X +0.04
   state = setTarget(state, 2);
-  state = rotate(state, 1, -2).state;           // view 2, EyeY -0.02
+  state = rotate(state, 1, -20).state;          // view 2, EyeY -0.02
 
   const onTwo = resetDelta(state);
   assert.ok(Math.abs((onTwo.nudge.EyeY ?? 0) - 0.02) < 1e-12, "reset view 2's EyeY");
@@ -138,7 +129,7 @@ test("each view keeps its own accumulator, so reset undoes only the panel you ar
 
 test("switching target and back does not lose what was already applied", () => {
   let state = createPlacement();
-  state = rotate(state, 0, 3).state;
+  state = rotate(state, 0, 30).state;
   const before = JSON.stringify(state.accumulated);
   state = setTarget(setTarget(state, 2), 1);
   assert.equal(JSON.stringify(state.accumulated), before, "a detour must not clear the accumulator");

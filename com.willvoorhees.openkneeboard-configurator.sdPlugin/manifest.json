@@ -1,6 +1,6 @@
 {
   "Name": "OpenKneeboard Configurator",
-  "Version": "0.2.1.0",
+  "Version": "0.3.0.0",
   "Author": "Will Voorhees",
   "Description": "Control OpenKneeboard tabs, profiles, VR placement, visibility, and opacity from Stream Deck.",
   "Category": "OpenKneeboard Configurator",
@@ -94,7 +94,7 @@
       "Name": "Adjust Placement",
       "UUID": "com.willvoorhees.openkneeboard-configurator.placement-dial",
       "Icon": "imgs/actions/placement-dial/icon",
-      "Tooltip": "Turn a dial or press a key to nudge an axis or resize; press a dial to toggle coarse/fine.",
+      "Tooltip": "Turn a dial or press a key to nudge an axis or resize; set ticks per page.",
       "Controllers": [
         "Keypad",
         "Encoder"
@@ -102,30 +102,7 @@
       "Encoder": {
         "layout": "$X1",
         "TriggerDescription": {
-          "Rotate": "Nudge axis",
-          "Push": "Coarse / fine"
-        }
-      },
-      "States": [
-        {
-          "Image": "imgs/actions/placement-dial/key",
-          "TitleAlignment": "middle"
-        }
-      ]
-    },
-    {
-      "Name": "Coarse / Fine",
-      "UUID": "com.willvoorhees.openkneeboard-configurator.step-mode",
-      "Icon": "imgs/actions/placement-dial/icon",
-      "Tooltip": "Toggle the step size for placement controls.",
-      "Controllers": [
-        "Keypad",
-        "Encoder"
-      ],
-      "Encoder": {
-        "layout": "$X1",
-        "TriggerDescription": {
-          "Push": "Toggle coarse / fine"
+          "Rotate": "Nudge axis"
         }
       },
       "States": [

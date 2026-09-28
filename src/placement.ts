@@ -61,7 +61,6 @@ export function axisForDial(index: number): Axis | undefined {
 }
 
 export interface PlacementState {
-  readonly mode: StepMode;
   /**
    * Which view the dials move: the `Kneeboard` index, 1-based, 0 meaning whichever is active.
    *
@@ -81,8 +80,7 @@ const zeroed = (): Record<NudgeAxis, number> =>
 
 /** Coarse first: you reach for the dials because the panel is in the wrong place, not slightly off.
  * Target 1 because view 1 is the deck map, the panel you are nearly always adjusting. */
-export const createPlacement = (mode: StepMode = "coarse", target = 1): PlacementState => ({
-  mode,
+export const createPlacement = (target = 1): PlacementState => ({
   target,
   accumulated: {},
 });
@@ -96,11 +94,6 @@ export const setTarget = (state: PlacementState, target: number): PlacementState
 
 const forTarget = (state: PlacementState, target: number): Readonly<Partial<Record<NudgeAxis, number>>> =>
   state.accumulated[target] ?? zeroed();
-
-export const toggleMode = (state: PlacementState): PlacementState => ({
-  ...state,
-  mode: state.mode === "coarse" ? "fine" : "coarse",
-});
 
 /**
  * One dial tick (or several, since the hardware coalesces fast turns into a single event carrying a
@@ -117,7 +110,7 @@ export function rotate(
   const axis = axisForDial(dialIndex);
   if (!axis || ticks === 0) return { nudge: {}, state };
 
-  const delta = ticks * stepFor(axis, state.mode);
+  const delta = ticks * stepFor(axis, "fine");
   const current = forTarget(state, state.target);
   return {
     nudge: { [axis]: delta },
@@ -140,7 +133,7 @@ export function resize(state: PlacementState, ticks: number, base: PhysicalSize)
     (MIN_VIEW_SIZE - base.Width - (current.MaxWidth ?? 0)) / base.Width,
     (MIN_VIEW_SIZE - base.Height - (current.MaxHeight ?? 0)) / base.Height,
   );
-  const fraction = Math.max(ticks * STEPS[state.mode].size, floor);
+  const fraction = Math.max(ticks * STEPS.fine.size, floor);
   if (fraction === 0) return { nudge: {}, state };
   const MaxWidth = base.Width * fraction;
   const MaxHeight = base.Height * fraction;

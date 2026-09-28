@@ -35,7 +35,7 @@ export interface PageEffects {
   tab: string;
   /** The OpenKneeboard profile to assert, if any action on the page named one. */
   profile: string | undefined;
-  /** True when the placement page came up — its accumulator starts fresh. */
+  /** True when moving from the deck page into placement. */
   enteredPlacement: boolean;
 }
 
@@ -75,6 +75,8 @@ export function createPageCoordinator(options: {
 }): PageCoordinator {
   const { apply, settleMs = PAGE_SETTLE_MS, clock = systemClock } = options;
   const batches = new Map<string, PageSignal[]>();
+  const currentPage = new Map<string, "deck" | "placement">();
+  const currentProfile = new Map<string, string>();
 
   return {
     appeared(device, signal) {
@@ -88,7 +90,14 @@ export function createPageCoordinator(options: {
         const signals = batches.get(device) ?? [];
         batches.delete(device);
         const effects = resolvePage(signals);
-        if (effects) apply(device, effects);
+        if (effects) {
+          const page = signals.some((s) => s.page === "placement") ? "placement" : "deck";
+          const profileChanged = !!effects.profile && !!currentProfile.get(device) && currentProfile.get(device) !== effects.profile;
+          apply(device, { ...effects,
+            enteredPlacement: page === "placement" && (currentPage.get(device) !== "placement" || profileChanged) });
+          currentPage.set(device, page);
+          if (effects.profile) currentProfile.set(device, effects.profile);
+        }
       }, settleMs);
     },
   };

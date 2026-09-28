@@ -43,13 +43,9 @@
       'placement-dial': [
         ['axis', 'Axis', 'axis', 'Choose a direction or Size. Device default follows the dial column, or Left/Right on a key.'],
         ['direction', 'Key press ticks', 'number', 'Use 1 for increase or -1 for decrease. Default: 1; 0 disables key nudging.'],
-        ['coarseTab', 'Coarse reference tab', 'text', 'Default: Placement.'],
-        ['fineTab', 'Fine reference tab', 'text', 'Default: Placement Fine.'],
+        ['tickMultiplier', 'Dial ticks per detent', 'number', '1 for fine; 10 for coarse position/rotation; 5 for coarse size.'],
+        ['placementTab', 'Placement reference tab', 'text', 'Use Placement or Placement Fine to match this Stream Deck page.'],
         ['sizes', 'View sizes (JSON)', 'json', 'Optional mapping of view numbers to {"Width":0.15,"Height":0.25}.'],
-      ],
-      'step-mode': [
-        ['coarseTab', 'Coarse reference tab', 'text', 'Default: Placement.'],
-        ['fineTab', 'Fine reference tab', 'text', 'Default: Placement Fine.'],
       ],
       'view-select': [['view', 'View', 'number', '1-based OpenKneeboard view number.']],
       'view-visibility': [['view', 'View', 'number', '1-based OpenKneeboard view number.']],
