@@ -2,7 +2,7 @@
 
 A Windows Stream Deck plugin for controlling OpenKneeboard from keys and dials. It can switch tabs and profiles, recenter VR, nudge a view's placement and size, toggle one view, and fade one view. Each action has an offline property inspector for its settings. The plugin includes its own icons and build files.
 
-Existing Stream Deck profiles continue to work because the plugin keeps its original internal action identifiers. Its visible name and category are **OpenKneeboard Configurator**.
+Its visible name and category are **OpenKneeboard Configurator**, and its plugin ID is `com.willvoorhees.openkneeboard-configurator`. Profiles using the earlier plugin identifier need their actions re-added after installation; Stream Deck identifies actions by their plugin and action IDs.
 
 ## OpenKneeboard compatibility
 

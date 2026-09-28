@@ -24,7 +24,7 @@ import {
   pageAppeared,
 } from "./session.ts";
 
-const UUID = "com.will-voorhees.phoenix-openkneeboard";
+const UUID = "com.willvoorhees.openkneeboard-configurator";
 
 export type OverlayControlSettings = {
   /** Which view holds the wheel reference; short press toggles its visibility. */

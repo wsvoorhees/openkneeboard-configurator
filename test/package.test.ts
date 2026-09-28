@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const bundle = path.resolve('com.will-voorhees.phoenix-openkneeboard.sdPlugin');
+const bundle = path.resolve('com.willvoorhees.openkneeboard-configurator.sdPlugin');
 const manifest = JSON.parse(fs.readFileSync(path.join(bundle, 'manifest.json'), 'utf8'));
 
 function imagePath(reference: string, suffix = ''): string {
@@ -30,10 +30,10 @@ test('manifest artwork is complete, local, and has high-resolution variants', ()
   }
 });
 
-test('visible rename preserves action IDs used by existing profiles', () => {
+test('plugin and action IDs use the configurator namespace', () => {
   assert.equal(manifest.Name, 'OpenKneeboard Configurator');
   assert.equal(manifest.Category, manifest.Name);
-  assert.equal(manifest.UUID, 'com.will-voorhees.phoenix-openkneeboard');
+  assert.equal(manifest.UUID, 'com.willvoorhees.openkneeboard-configurator');
   assert.equal(new Set(manifest.Actions.map((action: { UUID: string }) => action.UUID)).size, manifest.Actions.length);
   for (const action of manifest.Actions) assert.ok(action.UUID.startsWith(`${manifest.UUID}.`));
 });

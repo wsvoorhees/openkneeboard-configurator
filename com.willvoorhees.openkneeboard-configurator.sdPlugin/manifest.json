@@ -7,7 +7,7 @@
   "CategoryIcon": "imgs/category",
   "Icon": "imgs/plugin",
   "URL": "https://github.com/wsvoorhees/openkneeboard-configurator",
-  "UUID": "com.will-voorhees.phoenix-openkneeboard",
+  "UUID": "com.willvoorhees.openkneeboard-configurator",
   "CodePath": "bin/plugin.js",
   "SDKVersion": 3,
   "Nodejs": {
@@ -26,7 +26,7 @@
   "Actions": [
     {
       "Name": "Overlay Control",
-      "UUID": "com.will-voorhees.phoenix-openkneeboard.overlay-control",
+      "UUID": "com.willvoorhees.openkneeboard-configurator.overlay-control",
       "Icon": "imgs/actions/overlay-control/icon",
       "Tooltip": "Toggle the wheel reference.",
       "Controllers": [
@@ -41,7 +41,7 @@
     },
     {
       "Name": "Placement Dial",
-      "UUID": "com.will-voorhees.phoenix-openkneeboard.placement-dial",
+      "UUID": "com.willvoorhees.openkneeboard-configurator.placement-dial",
       "Icon": "imgs/actions/placement-dial/icon",
       "Tooltip": "Turn to nudge one axis; press to toggle coarse/fine.",
       "Controllers": [
@@ -64,7 +64,7 @@
     },
     {
       "Name": "Reset Position",
-      "UUID": "com.will-voorhees.phoenix-openkneeboard.placement-reset",
+      "UUID": "com.willvoorhees.openkneeboard-configurator.placement-reset",
       "Icon": "imgs/actions/placement-reset/icon",
       "Tooltip": "Undo every nudge sent since placement was entered.",
       "Controllers": [
@@ -79,7 +79,7 @@
     },
     {
       "Name": "Recentre VR",
-      "UUID": "com.will-voorhees.phoenix-openkneeboard.recentre",
+      "UUID": "com.willvoorhees.openkneeboard-configurator.recentre",
       "Icon": "imgs/actions/recentre/icon",
       "Tooltip": "Recentre the kneeboard on your current view.",
       "Controllers": [
@@ -94,7 +94,7 @@
     },
     {
       "Name": "Select View",
-      "UUID": "com.will-voorhees.phoenix-openkneeboard.view-select",
+      "UUID": "com.willvoorhees.openkneeboard-configurator.view-select",
       "Icon": "imgs/actions/view-select/icon",
       "Tooltip": "Point the placement dials at this view.",
       "Controllers": [
@@ -109,7 +109,7 @@
     },
     {
       "Name": "Toggle View",
-      "UUID": "com.will-voorhees.phoenix-openkneeboard.view-visibility",
+      "UUID": "com.willvoorhees.openkneeboard-configurator.view-visibility",
       "Icon": "imgs/actions/view-visibility/icon",
       "Tooltip": "Show or hide this view.",
       "Controllers": [
@@ -124,7 +124,7 @@
     },
     {
       "Name": "Fade View",
-      "UUID": "com.will-voorhees.phoenix-openkneeboard.view-opacity",
+      "UUID": "com.willvoorhees.openkneeboard-configurator.view-opacity",
       "Icon": "imgs/actions/view-opacity/icon",
       "Tooltip": "Fade the selected view up or down.",
       "Controllers": [

@@ -11,7 +11,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$PluginId = 'com.will-voorhees.phoenix-openkneeboard'
+$PluginId = 'com.willvoorhees.openkneeboard-configurator'
 $PluginDir = "$PluginId.sdPlugin"
 $Plugins = Join-Path $env:APPDATA 'Elgato\StreamDeck\Plugins'
 

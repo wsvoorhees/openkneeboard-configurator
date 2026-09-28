@@ -9,8 +9,8 @@
     "test": "node --experimental-strip-types --test test/*.test.ts",
     "typecheck": "tsc --noEmit",
     "generate:icons": "node scripts/generate-icons.mjs",
-    "validate": "streamdeck validate com.will-voorhees.phoenix-openkneeboard.sdPlugin --no-update-check",
-    "pack": "npm run build && npm run bundle:runtime && streamdeck pack com.will-voorhees.phoenix-openkneeboard.sdPlugin --output dist --force --no-update-check",
+    "validate": "streamdeck validate com.willvoorhees.openkneeboard-configurator.sdPlugin --no-update-check",
+    "pack": "npm run build && npm run bundle:runtime && streamdeck pack com.willvoorhees.openkneeboard-configurator.sdPlugin --output dist --force --no-update-check",
     "bundle:runtime": "node scripts/bundle-runtime.mjs"
   },
   "dependencies": {
