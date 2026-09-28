@@ -43,3 +43,21 @@ export const PLACEMENT_FEEDBACK = [
 export function placementFeedback(index: number): (typeof PLACEMENT_FEEDBACK)[number] | undefined {
   return PLACEMENT_FEEDBACK[index];
 }
+
+const TRANSLATION_FEEDBACK = [
+  {
+    title: "Left/Right",
+    icon: svg('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="m7 4-7 8 7 8v-5h10v5l7-8-7-8v5H7V4z"/></svg>'),
+  },
+  {
+    title: "Up/Down",
+    icon: svg('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="m12 0-8 7h5v10H4l8 7 8-7h-5V7h5l-8-7z"/></svg>'),
+  },
+];
+
+/** The selected movement, including Size, rather than the physical dial position. */
+export function placementFeedbackForAxis(index: number, size = false): { title: string; icon: string } | undefined {
+  if (size) return PLACEMENT_FEEDBACK[1];
+  if (index < 2) return TRANSLATION_FEEDBACK[index];
+  return PLACEMENT_FEEDBACK[index];
+}

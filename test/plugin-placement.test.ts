@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { AXES, isEmptyNudge, nudgeVrView, type Axis } from "../src/protocol.ts";
+import { placementFeedbackForAxis } from "../src/feedback.ts";
 import {
   DEFAULT_VIEW_SIZE,
   MIN_VIEW_SIZE,
@@ -22,6 +23,13 @@ test("positional nudge indices map to distinct degrees of freedom", () => {
   assert.deepEqual([...DIAL_AXES], ["X", "EyeY", "Z", "RX", "RY", "RZ"]);
   assert.equal(new Set(DIAL_AXES).size, DIAL_AXES.length, "no two positions may share an axis");
   assert.equal(DIAL_AXES.length, AXES.length);
+});
+
+test("dial feedback names the configured movement, including size", () => {
+  assert.deepEqual(Array.from({ length: 6 }, (_, i) => placementFeedbackForAxis(i)?.title),
+    ["Left/Right", "Up/Down", "Near/Far", "Pitch", "Yaw", "Roll"]);
+  assert.equal(placementFeedbackForAxis(5, true)?.title, "Size",
+    "Size overrides the physical dial column in the feedback");
 });
 
 test("size nudges preserve captured proportions, use the live mode, and reset exactly", () => {

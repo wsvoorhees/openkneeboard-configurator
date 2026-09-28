@@ -8,7 +8,7 @@ import {
   type WillAppearEvent,
 } from "@elgato/streamdeck";
 
-import { placementFeedback } from "../feedback.ts";
+import { placementFeedback, placementFeedbackForAxis } from "../feedback.ts";
 import { DEFAULT_VIEW_SIZE, OPACITY_STEP, resetDelta, resize, rotate, setTarget, toggleMode,
   validSize } from "../placement.ts";
 import { recenterVr } from "../protocol.ts";
@@ -167,7 +167,7 @@ export class PlacementDial extends SingletonAction<PlacementDialSettings> {
   override async onWillAppear(ev: WillAppearEvent<PlacementDialSettings>): Promise<void> {
     pageAppeared(ev.action.device.id, { page: "placement", tab: ev.payload.settings?.coarseTab });
     if (!ev.action.isDial()) return;
-    const feedback = placementFeedback(this.#index(ev));
+    const feedback = placementFeedbackForAxis(this.#index(ev), ev.payload.settings?.size === true);
     if (!feedback) return;
     // Encoder touch strips have their own feedback layout. `States[].Image` only supplies the
     // action image; it does not populate this layout's `icon` pixmap.

@@ -9,7 +9,7 @@
     body { margin: 0; padding: 16px; color: #f0f0f0; background: #252525; }
     h1 { margin: 0 0 14px; font-size: 15px; font-weight: 600; }
     label { display: block; margin: 12px 0; color: #d3d3d3; }
-    input, textarea { display: block; box-sizing: border-box; width: 100%; margin-top: 5px; padding: 7px 8px; color: white; background: #363636; border: 1px solid #555; border-radius: 4px; font: inherit; }
+    input, select, textarea { display: block; box-sizing: border-box; width: 100%; margin-top: 5px; padding: 7px 8px; color: white; background: #363636; border: 1px solid #555; border-radius: 4px; font: inherit; }
     input[type=checkbox] { display: inline; width: auto; margin: 0 7px 0 0; }
     textarea { min-height: 70px; resize: vertical; font-family: ui-monospace, monospace; }
     button { padding: 7px 16px; color: white; background: #266773; border: 0; border-radius: 4px; cursor: pointer; }
@@ -41,11 +41,10 @@
         ['view', 'View', 'number', '0 or blank uses the active view; 1 and above select a specific view.'],
       ],
       'placement-dial': [
-        ['dialIndex', 'Axis index', 'number', '0–5: X, EyeY, Z, RX, RY, RZ. Defaults to dial column or X on a key.'],
+        ['axis', 'Axis', 'axis', 'Choose a direction or Size. Device default follows the dial column, or Left/Right on a key.'],
         ['direction', 'Key press ticks', 'number', 'Use 1 for increase or -1 for decrease. Default: 1; 0 disables key nudging.'],
         ['coarseTab', 'Coarse reference tab', 'text', 'Default: Placement.'],
         ['fineTab', 'Fine reference tab', 'text', 'Default: Placement Fine.'],
-        ['size', 'Use size instead of axis', 'checkbox', 'Scale both physical dimensions proportionally.'],
         ['sizes', 'View sizes (JSON)', 'json', 'Optional mapping of view numbers to {"Width":0.15,"Height":0.25}.'],
       ],
       'step-mode': [
@@ -70,18 +69,43 @@
     let suffix;
     let settings = {};
     let activeSpecs = [];
+    const axes = [
+      ['', 'Device default'],
+      ['0', 'Left/Right'],
+      ['1', 'Up/Down'],
+      ['2', 'Near/Far'],
+      ['3', 'Pitch'],
+      ['4', 'Yaw'],
+      ['5', 'Roll'],
+      ['size', 'Size'],
+    ];
+    function selectedAxis(settings) {
+      if (settings.size === true) return 'size';
+      return Number.isInteger(settings.dialIndex) && settings.dialIndex >= 0 && settings.dialIndex <= 5
+        ? String(settings.dialIndex) : '';
+    }
+    function writeAxisSelection(next, choice) {
+      delete next.dialIndex;
+      delete next.size;
+      if (choice === 'size') next.size = true;
+      else if (choice !== '') next.dialIndex = Number(choice);
+    }
     function render() {
       fields.replaceChildren();
       for (const [key, labelText, kind, hint] of activeSpecs) {
         const label = document.createElement('label');
         label.textContent = labelText;
-        const input = kind === 'json' ? document.createElement('textarea') : document.createElement('input');
+        const input = document.createElement(kind === 'json' ? 'textarea' : kind === 'axis' ? 'select' : 'input');
         input.id = key;
-        if (kind !== 'json') input.type = kind;
+        if (kind !== 'json' && kind !== 'axis') input.type = kind;
         if (kind === 'number') input.step = 'any';
+        if (kind === 'axis') {
+          for (const [value, title] of axes) input.add(new Option(title, value));
+          input.value = selectedAxis(settings);
+        }
         if (kind === 'checkbox') input.checked = settings[key] === true;
         else if (kind === 'json') input.value = settings[key] ? JSON.stringify(settings[key], null, 2) : '';
-        else input.value = settings[key] ?? '';
+        else if (kind !== 'axis') input.value = settings[key] ?? '';
         label.append(input);
         const help = document.createElement('small');
         help.textContent = hint;
@@ -102,6 +126,10 @@
       try {
         for (const [key, , kind] of activeSpecs) {
           const input = document.getElementById(key);
+          if (kind === 'axis') {
+            writeAxisSelection(next, input.value);
+            continue;
+          }
           if (kind === 'checkbox') { next[key] = input.checked; continue; }
           if (input.value.trim() === '') { delete next[key]; continue; }
           if (kind === 'number') {
@@ -109,9 +137,6 @@
             if (!Number.isFinite(value)) throw new Error(`${key} must be a finite number`);
             if (['view', 'wheelView'].includes(key) && (!Number.isInteger(value) || value < (suffix === 'tab-select' && key === 'view' ? 0 : 1) || value > 255)) {
               throw new Error(`${key} must be a valid view number`);
-            }
-            if (key === 'dialIndex' && (!Number.isInteger(value) || value < 0 || value > 5)) {
-              throw new Error('Axis index must be an integer from 0 to 5');
             }
             next[key] = value;
           } else if (kind === 'json') {

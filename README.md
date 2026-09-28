@@ -38,7 +38,7 @@ Add an action from the **OpenKneeboard Configurator** category in Stream Deck, s
 | **Reset Position** | Undo this session's placement changes for the selected view | Press to reset |
 | **Recentre VR** | Recenter the VR overlay | Press to recenter |
 
-For **Switch Profile**, enter one exact profile name per action. This is a manual command; **Overlay Control** can also select its configured profile automatically when a Stream Deck page appears. A later page change can therefore replace a manual selection if that page has **Overlay Control** configured. For **Adjust Placement** on a key, `Key press ticks` defaults to `1`; set it to `-1` for a decrease. The **Use size instead of axis** setting works on keys and dials.
+For **Switch Profile**, enter one exact profile name per action. This is a manual command; **Overlay Control** can also select its configured profile automatically when a Stream Deck page appears. A later page change can therefore replace a manual selection if that page has **Overlay Control** configured. For **Adjust Placement**, choose Left/Right, Up/Down, Near/Far, Pitch, Yaw, Roll, or Size from the Axis menu. Size scales both physical dimensions proportionally. Device default follows the dial column, or Left/Right on a key. On a key, `Key press ticks` defaults to `1`; set it to `-1` for a decrease. Existing actions with an axis index or Size setting appear with the matching menu choice and keep working.
 
 Placement controls work best on a dedicated Stream Deck page. Create `Placement` and `Placement Fine` tabs in OpenKneeboard if you want the page switch to show step-size references; otherwise set those fields to your own tab titles. The plugin does not create tabs or Stream Deck profiles.
 
