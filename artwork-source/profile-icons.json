@@ -1,0 +1,72 @@
+{
+  "overlayControl.png": {
+    "source": "original",
+    "glyph": "steering-wheel",
+    "sha256": "63d1aeba323356772f9a03cfad0adbcbe652c7cf909371e39380ed2af4b9bd3a"
+  },
+  "placement-done.png": {
+    "source": "material",
+    "glyph": "check",
+    "sha256": "a494a6e054d22e512e14b4b684e6c303b0962183010e1c2f5195d145cf7b32a8"
+  },
+  "placement-fadeIn.png": {
+    "source": "material",
+    "glyph": "brightness_high",
+    "sha256": "e698a87073b33f33db7c4ae61300a1d70f943a4c55ef68faedc56d445e30f8c4"
+  },
+  "placement-nearFar.png": {
+    "source": "material",
+    "glyph": "open_in_full",
+    "sha256": "76727b668a62cedd81e82ead61bf031f01a6f108cbdd53f40041d11529141880"
+  },
+  "placement-pitch.png": {
+    "source": "material",
+    "glyph": "rotate_90_degrees_ccw",
+    "sha256": "8a755737c977d1cdccfbee75f74aed7c88c4c265a5dd6e5db535a906cd62b536"
+  },
+  "placement-reset.png": {
+    "source": "material",
+    "glyph": "restart_alt",
+    "sha256": "bd182da94f0a55cd8b3e4aa7a7f680f0847eab6b8d889fa8ec0722d1dc6bf2ce"
+  },
+  "placement-roll.png": {
+    "source": "material",
+    "glyph": "screen_rotation",
+    "sha256": "6c6a0a4c3cf37bd1db18fabd2eacd97029fa753a68ec6fd779624dc9523e4fdc"
+  },
+  "placement-size.png": {
+    "source": "material",
+    "glyph": "aspect_ratio",
+    "sha256": "dad134c91140c90c03dea4f1e7d972dd778f0381c97725937ae72a8127e70f5b"
+  },
+  "placement-talk.png": {
+    "source": "material",
+    "glyph": "mic",
+    "sha256": "599f90e42ee29a9109b2417cfe6e3b02b98a2f22a99bc8dd4bada93be3ae8d25"
+  },
+  "placement-viewSelect.png": {
+    "source": "material",
+    "glyph": "filter_center_focus",
+    "sha256": "e02524960112ce610beb60e8927e0eb2e85243330290a77b1b42797dc26c3afc"
+  },
+  "placement-viewVisibility.png": {
+    "source": "material",
+    "glyph": "visibility",
+    "sha256": "7f3010c050157ec9f51dacc2b0feda109c2adf640047a7a8e7470886510b6630"
+  },
+  "placement-wheelRef.png": {
+    "source": "original",
+    "glyph": "steering-wheel",
+    "sha256": "63d1aeba323356772f9a03cfad0adbcbe652c7cf909371e39380ed2af4b9bd3a"
+  },
+  "placement-yaw.png": {
+    "source": "material",
+    "glyph": "360",
+    "sha256": "b6a9d097b44f1a56d355ed4123fcf811d6083fde9e798012f6838ef291ab560c"
+  },
+  "vrRecentre.png": {
+    "source": "material",
+    "glyph": "vrpano",
+    "sha256": "47a5b2be2b8e42f28dcdadbd34554ac05ea3fed4833004873c9908092fe32df7"
+  }
+}

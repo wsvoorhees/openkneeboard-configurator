@@ -4,6 +4,12 @@ A Windows Stream Deck plugin for controlling OpenKneeboard from keys and dials. 
 
 Its visible name and category are **OpenKneeboard Configurator**, and its plugin ID is `com.willvoorhees.openkneeboard-configurator`. Profiles using the earlier plugin identifier need their actions re-added after installation; Stream Deck identifies actions by their plugin and action IDs.
 
+## Artwork
+
+The icons in `imgs/actions/` are the plugin's bundled defaults, shown in Stream Deck's action list and on newly added actions. Stream Deck profiles can override the image on each key or dial. The existing rig uses those overrides, so its key faces differ from the bundled defaults.
+
+The package also includes 14 images verified against the installed profiles in `imgs/profile/`: the original steering wheel and icons based on Google's Material set. Their source SVGs and image hashes are in `artwork-source/`; the Material license is in the plugin's `licenses/` folder. Six other images in the current profile came from the Lovely Sim Racing icon pack and are deliberately absent from this public repository. The plugin does not require that pack to build, install, or run.
+
 ## OpenKneeboard compatibility
 
 | Action | OpenKneeboard requirement |

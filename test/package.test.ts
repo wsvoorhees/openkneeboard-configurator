@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 
 const bundle = path.resolve('com.willvoorhees.openkneeboard-configurator.sdPlugin');
 const manifest = JSON.parse(fs.readFileSync(path.join(bundle, 'manifest.json'), 'utf8'));
@@ -44,4 +45,25 @@ test('every action has the bundled offline settings UI', () => {
   assert.match(html, /connectElgatoStreamDeckSocket/);
   assert.match(html, /setSettings/);
   assert.doesNotMatch(html, /https?:\/\//);
+});
+
+test('included profile artwork matches the recorded source images', () => {
+  const sourceDir = path.resolve('artwork-source');
+  const recorded = JSON.parse(fs.readFileSync(path.join(sourceDir, 'profile-icons.json'), 'utf8')) as
+    Record<string, { source: 'original' | 'material'; glyph: string; sha256: string }>;
+  const profileDir = path.join(bundle, 'imgs/profile');
+  assert.equal(Object.keys(recorded).length, 14);
+  assert.deepEqual(fs.readdirSync(profileDir).sort(), Object.keys(recorded).sort());
+  for (const [name, source] of Object.entries(recorded)) {
+    const image = fs.readFileSync(path.join(profileDir, name));
+    assert.equal(image.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
+    assert.equal(image.readUInt32BE(16), 144);
+    assert.equal(image.readUInt32BE(20), 144);
+    assert.equal(createHash('sha256').update(image).digest('hex'), source.sha256);
+    const svg = source.source === 'original'
+      ? path.join(sourceDir, `${source.glyph}.svg`)
+      : path.join(sourceDir, source.source, `${source.glyph}.svg`);
+    assert.ok(fs.existsSync(svg), `${name} source SVG`);
+  }
+  assert.ok(fs.existsSync(path.join(bundle, 'licenses/material-symbols-apache-2.0.txt')));
 });
