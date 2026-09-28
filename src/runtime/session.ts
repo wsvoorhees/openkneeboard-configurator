@@ -53,6 +53,9 @@ export const showTab = (title: string): boolean => send(setTabByName(title));
 const profile = createProfileAsserter(send);
 export const showProfile = (name: string): boolean => profile.assert(name);
 
+/** A manual selection always sends, even after an automatic assertion of the same name. */
+export const selectProfile = (name: string): boolean => profile.select(name);
+
 /** Forget the asserted profile, so a restart re-asserts rather than assuming. */
 export const forgetProfile = (): void => profile.forget();
 

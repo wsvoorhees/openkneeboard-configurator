@@ -20,7 +20,7 @@ import {
   sendNudge,
   setPlacement,
   fadeView,
-  showProfile,
+  selectProfile,
   pageAppeared,
 } from "./session.ts";
 
@@ -73,9 +73,10 @@ export class OverlayControl extends SingletonAction<OverlayControlSettings> {
    * profile or page changes. `onKeyDown` re-asserts for that reason — pressing the key you would
    * reach for anyway is the cheapest resync available.
    */
-  override onWillAppear(ev: WillAppearEvent<OverlayControlSettings>): void {
+  override async onWillAppear(ev: WillAppearEvent<OverlayControlSettings>): Promise<void> {
     const settings = ev.payload.settings ?? {};
     pageAppeared(ev.action.device.id, { page: "deck", deckTab: settings.deckTab ?? "", profile: settings.kneeboardProfile });
+    if (ev.action.isDial()) await ev.action.setTitle("Reference");
   }
 
   override onKeyDown(ev: KeyDownEvent<OverlayControlSettings>): void {
@@ -83,13 +84,59 @@ export class OverlayControl extends SingletonAction<OverlayControlSettings> {
     // this is the first moment the plugin can put it on the right profile — and the press is about
     // to ask it for a view or a tab that only the right profile has.
     const profile = ev.payload.settings?.kneeboardProfile;
-    if (profile) showProfile(profile);
+    if (profile) selectProfile(profile);
+    this.#showWheel(ev.payload.settings ?? {});
+  }
+
+  override onDialDown(ev: DialDownEvent<OverlayControlSettings>): void {
+    const profile = ev.payload.settings?.kneeboardProfile;
+    if (profile) selectProfile(profile);
     this.#showWheel(ev.payload.settings ?? {});
   }
 }
 
+export type ProfileSelectSettings = { profile?: string };
+
+/** Explicitly switch OpenKneeboard profiles from either a key or a dial press. */
+@action({ UUID: `${UUID}.profile-select` })
+export class ProfileSelect extends SingletonAction<ProfileSelectSettings> {
+  override async onWillAppear(ev: WillAppearEvent<ProfileSelectSettings>): Promise<void> {
+    if (ev.action.isDial()) await ev.action.setTitle(ev.payload.settings?.profile || "Profile");
+  }
+  #select(settings: ProfileSelectSettings): void {
+    const name = settings.profile?.trim();
+    if (name) selectProfile(name);
+  }
+  override onKeyDown(ev: KeyDownEvent<ProfileSelectSettings>): void {
+    this.#select(ev.payload.settings ?? {});
+  }
+  override onDialDown(ev: DialDownEvent<ProfileSelectSettings>): void {
+    this.#select(ev.payload.settings ?? {});
+  }
+}
+
+export type TabSelectSettings = { tab?: string; view?: number };
+
+/** Show a named tab on the active view, or a configured view. */
+@action({ UUID: `${UUID}.tab-select` })
+export class TabSelect extends SingletonAction<TabSelectSettings> {
+  override async onWillAppear(ev: WillAppearEvent<TabSelectSettings>): Promise<void> {
+    if (ev.action.isDial()) await ev.action.setTitle(ev.payload.settings?.tab || "Tab");
+  }
+  #select(settings: TabSelectSettings): void {
+    const title = settings.tab?.trim();
+    if (title) showTabOnView(title, settings.view ?? 0);
+  }
+  override onKeyDown(ev: KeyDownEvent<TabSelectSettings>): void {
+    this.#select(ev.payload.settings ?? {});
+  }
+  override onDialDown(ev: DialDownEvent<TabSelectSettings>): void {
+    this.#select(ev.payload.settings ?? {});
+  }
+}
+
 export type PlacementDialSettings = {
-  /** 0-5 → X / EyeY / Z / RX / RY / RZ. Falls back to the dial's own column. */
+  /** 0-5 → X / EyeY / Z / RX / RY / RZ. Defaults to dial column or X on a key. */
   dialIndex?: number;
   direction?: number;
   /** The two generated placement references. Pressing a dial switches between them, which is how
@@ -101,6 +148,14 @@ export type PlacementDialSettings = {
   size?: boolean;
   sizes?: Record<string, Record<string, number>>;
 };
+
+type ModeTabs = Pick<PlacementDialSettings, "coarseTab" | "fineTab">;
+
+function switchStepMode(settings: ModeTabs): void {
+  const next = toggleMode(getPlacement());
+  setPlacement(next);
+  showTabOnView(next.mode === "fine" ? (settings.fineTab ?? "Placement Fine") : (settings.coarseTab ?? "Placement"), 1);
+}
 
 /** A placement-page dial. Turn nudges its axis; press toggles coarse/fine for ALL of them. */
 @action({ UUID: `${UUID}.placement-dial` })
@@ -121,31 +176,42 @@ export class PlacementDial extends SingletonAction<PlacementDialSettings> {
   }
 
   override onDialRotate(ev: DialRotateEvent<PlacementDialSettings>): void {
+    this.#move(ev.payload.settings ?? {}, this.#index(ev), ev.payload.ticks);
+  }
+
+  #move(settings: PlacementDialSettings, index: number, ticks: number): void {
     const before = getPlacement();
-    const settings = ev.payload.settings;
     const candidate = settings?.sizes?.[String(before.target)];
     const base = validSize(candidate) ? candidate : DEFAULT_VIEW_SIZE;
     const { nudge, state } = settings?.size
-      ? resize(before, ev.payload.ticks, base)
-      : rotate(before, this.#index(ev), ev.payload.ticks);
+      ? resize(before, ticks, base)
+      : rotate(before, index, ticks);
     setPlacement(state);
     sendNudge(nudge, before.target);
   }
 
   override onKeyDown(ev: KeyDownEvent<PlacementDialSettings>): void {
-    const before = getPlacement();
-    const { nudge, state } = rotate(before, this.#index(ev), ev.payload.settings?.direction ?? 0);
-    setPlacement(state);
-    sendNudge(nudge, before.target);
+    // Keys can sit in any column; only dials inherit their axis from the physical column.
+    this.#move(ev.payload.settings ?? {}, ev.payload.settings?.dialIndex ?? 0, ev.payload.settings?.direction ?? 1);
   }
 
   override onDialDown(ev: DialDownEvent<PlacementDialSettings>): void {
-    // Coarse/fine is global, not per dial: six dials each in their own mode is a state nobody can
-    // hold in their head while driving.
-    const next = toggleMode(getPlacement());
-    setPlacement(next);
-    const settings = ev.payload.settings ?? {};
-    showTabOnView(next.mode === "fine" ? (settings.fineTab ?? "Placement Fine") : (settings.coarseTab ?? "Placement"), 1);
+    switchStepMode(ev.payload.settings ?? {});
+  }
+}
+
+/** A key or dial press for the coarse/fine mode switch used by placement nudges. */
+@action({ UUID: `${UUID}.step-mode` })
+export class StepModeControl extends SingletonAction<ModeTabs> {
+  override async onWillAppear(ev: WillAppearEvent<ModeTabs>): Promise<void> {
+    pageAppeared(ev.action.device.id, { page: "placement" });
+    if (ev.action.isDial()) await ev.action.setTitle("Coarse / Fine");
+  }
+  override onKeyDown(ev: KeyDownEvent<ModeTabs>): void {
+    switchStepMode(ev.payload.settings ?? {});
+  }
+  override onDialDown(ev: DialDownEvent<ModeTabs>): void {
+    switchStepMode(ev.payload.settings ?? {});
   }
 }
 
@@ -163,13 +229,20 @@ export type ViewKeySettings = {
  */
 @action({ UUID: `${UUID}.view-select` })
 export class ViewSelect extends SingletonAction<ViewKeySettings> {
-  override onWillAppear(ev: WillAppearEvent<ViewKeySettings>): void {
+  override async onWillAppear(ev: WillAppearEvent<ViewKeySettings>): Promise<void> {
     pageAppeared(ev.action.device.id, { page: "placement" });
+    if (ev.action.isDial()) await ev.action.setTitle(`Move view ${ev.payload.settings?.view ?? 1}`);
   }
-  override onKeyDown(ev: KeyDownEvent<ViewKeySettings>): void {
-    const view = ev.payload.settings?.view ?? 1;
+  #select(settings: ViewKeySettings): void {
+    const view = settings.view ?? 1;
     setPlacement(setTarget(getPlacement(), view));
     streamDeck.logger.info(`dials now move view ${view}`);
+  }
+  override onKeyDown(ev: KeyDownEvent<ViewKeySettings>): void {
+    this.#select(ev.payload.settings ?? {});
+  }
+  override onDialDown(ev: DialDownEvent<ViewKeySettings>): void {
+    this.#select(ev.payload.settings ?? {});
   }
 }
 
@@ -182,13 +255,20 @@ export class ViewSelect extends SingletonAction<ViewKeySettings> {
  */
 @action({ UUID: `${UUID}.view-visibility` })
 export class ViewVisibility extends SingletonAction<ViewKeySettings> {
-  override onWillAppear(ev: WillAppearEvent<ViewKeySettings>): void {
+  override async onWillAppear(ev: WillAppearEvent<ViewKeySettings>): Promise<void> {
     pageAppeared(ev.action.device.id, { page: "placement" });
+    if (ev.action.isDial()) await ev.action.setTitle(`Toggle view ${ev.payload.settings?.view ?? 1}`);
   }
-  override onKeyDown(ev: KeyDownEvent<ViewKeySettings>): void {
-    const view = ev.payload.settings?.view ?? 1;
+  #toggle(settings: ViewKeySettings): void {
+    const view = settings.view ?? 1;
     showView(view);
     streamDeck.logger.info(`toggled visibility of view ${view}`);
+  }
+  override onKeyDown(ev: KeyDownEvent<ViewKeySettings>): void {
+    this.#toggle(ev.payload.settings ?? {});
+  }
+  override onDialDown(ev: DialDownEvent<ViewKeySettings>): void {
+    this.#toggle(ev.payload.settings ?? {});
   }
 }
 
@@ -215,12 +295,17 @@ export class ViewOpacity extends SingletonAction<ViewOpacitySettings> {
     await ev.action.setFeedbackLayout("$X1");
     await ev.action.setFeedback({ title: feedback.title, icon: feedback.icon });
   }
-  override onKeyDown(ev: KeyDownEvent<ViewOpacitySettings>): void {
-    const settings = ev.payload.settings ?? {};
+  #step(settings: ViewOpacitySettings): void {
     const view = settings.view ?? getPlacement().target;
     const step = settings.step ?? -OPACITY_STEP;
     fadeView(view, step);
     streamDeck.logger.info(`faded view ${view} by ${step}`);
+  }
+  override onKeyDown(ev: KeyDownEvent<ViewOpacitySettings>): void {
+    this.#step(ev.payload.settings ?? {});
+  }
+  override onDialDown(ev: DialDownEvent<ViewOpacitySettings>): void {
+    this.#step(ev.payload.settings ?? {});
   }
   override onDialRotate(ev: DialRotateEvent<ViewOpacitySettings>): void {
     const view = ev.payload.settings?.view ?? getPlacement().target;
@@ -231,8 +316,9 @@ export class ViewOpacity extends SingletonAction<ViewOpacitySettings> {
 /** Undo everything this session moved. Relative-only API, so this is the only "reset" possible. */
 @action({ UUID: `${UUID}.placement-reset` })
 export class PlacementReset extends SingletonAction {
-  override onWillAppear(ev: WillAppearEvent): void {
+  override async onWillAppear(ev: WillAppearEvent): Promise<void> {
     pageAppeared(ev.action.device.id, { page: "placement" });
+    if (ev.action.isDial()) await ev.action.setTitle("Reset position");
   }
   override onKeyDown(): void {
     const before = getPlacement();
@@ -240,12 +326,21 @@ export class PlacementReset extends SingletonAction {
     setPlacement(state);
     sendNudge(nudge, before.target);
   }
+  override onDialDown(): void {
+    this.onKeyDown();
+  }
 }
 
 /** Recenter, which works against the shipped release and needs no PR. */
 @action({ UUID: `${UUID}.recentre` })
 export class Recentre extends SingletonAction {
+  override async onWillAppear(ev: WillAppearEvent): Promise<void> {
+    if (ev.action.isDial()) await ev.action.setTitle("Recentre VR");
+  }
   override onKeyDown(): void {
     send(recenterVr());
+  }
+  override onDialDown(): void {
+    this.onKeyDown();
   }
 }

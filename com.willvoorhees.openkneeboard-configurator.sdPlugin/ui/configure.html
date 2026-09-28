@@ -33,13 +33,24 @@
         ['wheelView', 'Reference view', 'number', '1-based OpenKneeboard view number.'],
         ['kneeboardProfile', 'OpenKneeboard profile', 'text', 'Exact profile name; leave blank to keep the current profile.'],
       ],
+      'profile-select': [
+        ['profile', 'OpenKneeboard profile', 'text', 'Exact name of an existing profile. Press a key or dial to switch.'],
+      ],
+      'tab-select': [
+        ['tab', 'OpenKneeboard tab', 'text', 'Exact name of an existing tab. Press a key or dial to show it.'],
+        ['view', 'View', 'number', '0 or blank uses the active view; 1 and above select a specific view.'],
+      ],
       'placement-dial': [
-        ['dialIndex', 'Axis index', 'number', '0–5: X, EyeY, Z, RX, RY, RZ. Defaults to dial column.'],
-        ['direction', 'Key press step', 'number', 'Signed tick count; 0 disables key nudging.'],
+        ['dialIndex', 'Axis index', 'number', '0–5: X, EyeY, Z, RX, RY, RZ. Defaults to dial column or X on a key.'],
+        ['direction', 'Key press ticks', 'number', 'Use 1 for increase or -1 for decrease. Default: 1; 0 disables key nudging.'],
         ['coarseTab', 'Coarse reference tab', 'text', 'Default: Placement.'],
         ['fineTab', 'Fine reference tab', 'text', 'Default: Placement Fine.'],
         ['size', 'Use size instead of axis', 'checkbox', 'Scale both physical dimensions proportionally.'],
         ['sizes', 'View sizes (JSON)', 'json', 'Optional mapping of view numbers to {"Width":0.15,"Height":0.25}.'],
+      ],
+      'step-mode': [
+        ['coarseTab', 'Coarse reference tab', 'text', 'Default: Placement.'],
+        ['fineTab', 'Fine reference tab', 'text', 'Default: Placement Fine.'],
       ],
       'view-select': [['view', 'View', 'number', '1-based OpenKneeboard view number.']],
       'view-visibility': [['view', 'View', 'number', '1-based OpenKneeboard view number.']],
@@ -56,6 +67,7 @@
     let socket;
     let context;
     let action;
+    let suffix;
     let settings = {};
     let activeSpecs = [];
     function render() {
@@ -95,8 +107,8 @@
           if (kind === 'number') {
             const value = Number(input.value);
             if (!Number.isFinite(value)) throw new Error(`${key} must be a finite number`);
-            if (['view', 'wheelView'].includes(key) && (!Number.isInteger(value) || value < 1 || value > 255)) {
-              throw new Error(`${key} must be a view number from 1 to 255`);
+            if (['view', 'wheelView'].includes(key) && (!Number.isInteger(value) || value < (suffix === 'tab-select' && key === 'view' ? 0 : 1) || value > 255)) {
+              throw new Error(`${key} must be a valid view number`);
             }
             if (key === 'dialIndex' && (!Number.isInteger(value) || value < 0 || value > 5)) {
               throw new Error('Axis index must be an integer from 0 to 5');
@@ -108,6 +120,8 @@
             next[key] = value;
           } else next[key] = input.value.trim();
         }
+        if (suffix === 'profile-select' && !next.profile) throw new Error('Enter an OpenKneeboard profile name');
+        if (suffix === 'tab-select' && !next.tab) throw new Error('Enter an OpenKneeboard tab name');
         socket.send(JSON.stringify({ event: 'setSettings', action, context, payload: next }));
         settings = next;
         status.textContent = 'Saved';
@@ -118,7 +132,7 @@
       const details = JSON.parse(actionInfo);
       action = details.action;
       settings = details.payload?.settings ?? {};
-      const suffix = action.split('.').at(-1);
+      suffix = action.split('.').at(-1);
       activeSpecs = specs[suffix] ?? [];
       document.getElementById('heading').textContent = `OpenKneeboard · ${suffix.replaceAll('-', ' ')}`;
       render();

@@ -2,12 +2,32 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   AXES,
+  createProfileAsserter,
   encodePacket,
   isEmptyNudge,
   nudgeVrView,
   recenterVr,
   setTabByName,
 } from "../src/protocol.ts";
+
+test("a manual profile selection always sends, while automatic assertions deduplicate", () => {
+  const packets: string[] = [];
+  const profiles = createProfileAsserter((packet) => { packets.push(packet); return true; });
+  assert.equal(profiles.assert("Race"), true);
+  assert.equal(profiles.assert("Race"), true);
+  assert.equal(packets.length, 1);
+  assert.equal(profiles.select("Race"), true);
+  assert.equal(packets.length, 2);
+  assert.deepEqual(JSON.parse(packets[1]!.split("!")[3]!), { Name: "Race" });
+});
+
+test("a failed manual profile selection can be retried", () => {
+  let writes = 0;
+  const profiles = createProfileAsserter(() => ++writes > 1);
+  assert.equal(profiles.select("Race"), false);
+  assert.equal(profiles.assert("Race"), true);
+  assert.equal(writes, 2);
+});
 
 test("the recenter packet is byte-for-byte the documented literal", () => {
   // Probed against a running OpenKneeboard 1.12.10 on 2026-09-20: this exact string, written to

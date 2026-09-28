@@ -15,7 +15,7 @@ The package also includes 14 images verified against the installed profiles in `
 | Action | OpenKneeboard requirement |
 | --- | --- |
 | Tab switching, profile switching, recenter VR | 1.12.10 or newer |
-| VR placement and size dials | A build containing merged [PR #937](https://github.com/OpenKneeboard/OpenKneeboard/pull/937). Release 1.12.10 predates it. |
+| VR placement and size adjustment | A build containing merged [PR #937](https://github.com/OpenKneeboard/OpenKneeboard/pull/937). Release 1.12.10 predates it. |
 | Toggle one view | A build containing [draft PR #939](https://github.com/OpenKneeboard/OpenKneeboard/pull/939). |
 | Fade one view | A build containing [draft PR #940](https://github.com/OpenKneeboard/OpenKneeboard/pull/940). |
 
@@ -23,15 +23,22 @@ The API uses a one-way Windows mailslot. A successful write confirms delivery to
 
 ## Configure actions
 
-Add an action from the **OpenKneeboard Configurator** category in Stream Deck, select it, enter its settings in the property inspector, and press **Save**. Tab and profile names must exactly match names in OpenKneeboard. View numbers start at 1; 0 means the active view where supported.
+Add an action from the **OpenKneeboard Configurator** category in Stream Deck, select it, enter its settings in the property inspector, and press **Save**. Tab and profile names must exactly match names in OpenKneeboard. View numbers start at 1; 0 means the active view where supported. Every action can be placed on a key or dial. Pressing a dial performs the same one-shot command as pressing a key; rotation adjusts placement or opacity.
 
-- **Overlay Control:** choose a deck tab, a reference tab and view, and optionally an OpenKneeboard profile. Press to show the reference panel.
-- **Placement Dial:** choose an axis index (0–5 for X, EyeY, Z, RX, RY, RZ), or enable size control. Turn to nudge; press the dial to switch between coarse and fine steps. A key can send a configured signed step.
-- **Select View:** point the placement dials at a view.
-- **Toggle View:** show or hide one view.
-- **Fade View:** adjust the selected view's opacity with a key or dial.
-- **Reset Position:** undo placement changes accumulated since entering the placement page.
-- **Recentre VR:** recenter the VR overlay.
+| Action | Key press | Dial |
+| --- | --- | --- |
+| **Switch Profile** | Switch to the configured OpenKneeboard profile | Press to switch |
+| **Show Tab** | Show the configured tab on the active or selected view | Press to show |
+| **Overlay Control** | Show or hide the reference panel; optionally select a profile first | Press for the same command |
+| **Adjust Placement** | Nudge one axis or resize by a signed number of ticks; use separate keys for increase and decrease | Turn to adjust; press to switch coarse/fine |
+| **Coarse / Fine** | Switch placement step size | Press to switch |
+| **Select View** | Point placement controls at a view | Press to select |
+| **Toggle View** | Show or hide one view | Press to toggle |
+| **Fade View** | Change opacity by a configured signed step | Turn to fade; press for the configured step |
+| **Reset Position** | Undo this session's placement changes for the selected view | Press to reset |
+| **Recentre VR** | Recenter the VR overlay | Press to recenter |
+
+For **Switch Profile**, enter one exact profile name per action. This is a manual command; **Overlay Control** can also select its configured profile automatically when a Stream Deck page appears. A later page change can therefore replace a manual selection if that page has **Overlay Control** configured. For **Adjust Placement** on a key, `Key press ticks` defaults to `1`; set it to `-1` for a decrease. The **Use size instead of axis** setting works on keys and dials.
 
 Placement controls work best on a dedicated Stream Deck page. Create `Placement` and `Placement Fine` tabs in OpenKneeboard if you want the page switch to show step-size references; otherwise set those fields to your own tab titles. The plugin does not create tabs or Stream Deck profiles.
 

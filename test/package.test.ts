@@ -47,6 +47,22 @@ test('every action has the bundled offline settings UI', () => {
   assert.doesNotMatch(html, /https?:\/\//);
 });
 
+test('every control is available on keys and dials', () => {
+  const expected = [
+    'overlay-control', 'profile-select', 'tab-select', 'placement-dial', 'step-mode',
+    'placement-reset', 'recentre', 'view-select', 'view-visibility', 'view-opacity',
+  ];
+  const ids = manifest.Actions.map((action: { UUID: string }) => action.UUID.slice(manifest.UUID.length + 1));
+  assert.deepEqual(ids.sort(), expected.sort());
+  const ui = fs.readFileSync(path.join(bundle, manifest.PropertyInspectorPath), 'utf8');
+  for (const action of manifest.Actions) {
+    assert.deepEqual([...action.Controllers].sort(), ['Encoder', 'Keypad']);
+    assert.ok(action.Encoder?.TriggerDescription?.Push, `${action.Name} dial press`);
+    const suffix = action.UUID.slice(manifest.UUID.length + 1);
+    assert.ok(ui.includes(`'${suffix}':`), `${action.Name} settings`);
+  }
+});
+
 test('included profile artwork matches the recorded source images', () => {
   const sourceDir = path.resolve('artwork-source');
   const recorded = JSON.parse(fs.readFileSync(path.join(sourceDir, 'profile-icons.json'), 'utf8')) as

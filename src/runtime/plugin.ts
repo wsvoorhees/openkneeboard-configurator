@@ -2,7 +2,10 @@ import streamDeck from "@elgato/streamdeck";
 
 import {
   OverlayControl,
+  ProfileSelect,
+  TabSelect,
   PlacementDial,
+  StepModeControl,
   PlacementReset,
   Recentre,
   ViewSelect,
@@ -17,7 +20,10 @@ streamDeck.logger.info(
 );
 
 streamDeck.actions.registerAction(new OverlayControl());
+streamDeck.actions.registerAction(new ProfileSelect());
+streamDeck.actions.registerAction(new TabSelect());
 streamDeck.actions.registerAction(new PlacementDial());
+streamDeck.actions.registerAction(new StepModeControl());
 streamDeck.actions.registerAction(new PlacementReset());
 streamDeck.actions.registerAction(new Recentre());
 streamDeck.actions.registerAction(new ViewSelect());

@@ -145,16 +145,23 @@ export function setProfileByName(name: string): string {
  */
 export function createProfileAsserter(send: (packet: string) => boolean): {
   assert: (name: string) => boolean;
+  select: (name: string) => boolean;
   forget: () => void;
 } {
   let last: string | undefined;
+  const select = (name: string): boolean => {
+    const ok = send(setProfileByName(name));
+    if (ok) last = name;
+    return ok;
+  };
   return {
     assert(name: string): boolean {
       if (name === last) return true;
-      const ok = send(setProfileByName(name));
-      if (ok) last = name;
-      return ok;
+      return select(name);
     },
+    // A deliberate button press must reach OpenKneeboard even if the last automatic assertion
+    // named the same profile: the user may have switched profiles in OpenKneeboard's own UI.
+    select,
     forget(): void {
       last = undefined;
     },
